@@ -21,7 +21,7 @@ class Glossario {
 
 	function Glossario() {
 		add_action( 'init', array( $this, 'init' ) );
-		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
 	}
 
 	function activate() {
@@ -39,6 +39,10 @@ class Glossario {
 	function init() {
 		$this->register_custom_post_types();
 		$this->register_custom_taxonomies();
+	}
+
+	function admin_init() {
+		$this->add_meta_boxes();
 	}
 
 	/**

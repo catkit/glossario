@@ -12,12 +12,12 @@ include( dirname( __FILE__ ) . '/glossario-metabox.php' );
 
 class Glossario {
 
-	public static $slug = 'glossario';
-	var $post_term      = 'glossario_term';
-	var $post_po_file   = 'glossario_po_file';
-	var $tax_language   = 'glossario_term_language';
-	var $tax_class      = 'glossario_term_class';
-	var $tax_status     = 'glossario_term_status';
+	public static $slug           = 'glossario';
+	public static $post_term      = 'glossario_term';
+	public static $post_po_file   = 'glossario_po_file';
+	public static $tax_language   = 'glossario_term_language';
+	public static $tax_class      = 'glossario_term_class';
+	public static $tax_status     = 'glossario_term_status';
 
 	function Glossario() {
 		add_action( 'init', array( $this, 'init' ) );
@@ -48,7 +48,7 @@ class Glossario {
 		$meta_box = array(
 			'id' => Glossario::$slug . '_term_info',
 			'title' => __( 'Glossary term info', 'glossario' ),
-			'post_types' => array( $this->post_term ),
+			'post_types' => array( Glossario::$post_term ),
 			'context' => 'normal',
 			'priority' => 'high',
 			'fields' => array(
@@ -90,7 +90,7 @@ class Glossario {
 
 	function register_custom_post_types() {
 		$post_types = array(
-			$this->post_term => array(
+			Glossario::$post_term => array(
 				'labels' => array(
 					'name' => __( 'Glossary', 'glossario' ),
 					'singular_name' => __( 'Glossary', 'glossario' ),
@@ -109,10 +109,9 @@ class Glossario {
 					'with_front' => false
 				),
 				'has_archive' => true,
-				'menu_position' => null,
 				'supports' => array( 'comments' )
 			),
-			$this->post_po_file => array(
+			Glossario::$post_po_file => array(
 				'labels' => array(
 					'name' => __( 'PO files', 'glossario' ),
 					'singular_name' => __( 'PO file', 'glossario' ),
@@ -126,14 +125,13 @@ class Glossario {
 				'public' => true,
 				'publicly_queryable' => true,
 				'show_ui' => true,
-				'show_in_menu' => 'edit.php?post_type=' . $this->post_term,
+				'show_in_menu' => 'edit.php?post_type=' . Glossario::$post_term,
 				'rewrite' => array(
 					'slug' => 'glossario/po-file',
 					'with_front' => false,
 				),
 				'has_archive' => true,
 				'hierarchical' => false,
-				'menu_position' => null,
 				'supports' => array( 'title', 'comments' )
 			)
 		);
@@ -144,7 +142,7 @@ class Glossario {
 
 	function register_custom_taxonomies() {
 		$taxonomies = array(
-			$this->tax_language => array(
+			Glossario::$tax_language => array(
 				'object_types' => array( 'glossario_term', 'glossario_po_file' ),
 				'labels' => array(
 					'name' => __( 'Glossary languages', 'glossario' ),
@@ -158,10 +156,9 @@ class Glossario {
 				),
 				'hierarchical' => true,
 				'show_ui' => true,
-				'query_var' => true,
 				'rewrite' => array( 'slug' => 'glossario/language' ),
 			),
-			$this->tax_class => array(
+			Glossario::$tax_class => array(
 				'object_types' => array( 'glossario_term' ),
 				'labels' => array(
 					'name' => __( 'Morphology classes', 'glossario' ),
@@ -175,10 +172,9 @@ class Glossario {
 				),
 				'hierarchical' => true,
 				'show_ui' => true,
-				'query_var' => true,
 				'rewrite' => array( 'slug' => 'glossario/class' ),
 			),
-			$this->tax_status => array(
+			Glossario::$tax_status => array(
 				'object_types' => array( 'glossario_term' ),
 				'labels' => array(
 					'name' => __( 'Translation status', 'glossario' ),
@@ -192,7 +188,6 @@ class Glossario {
 				),
 				'hierarchical' => true,
 				'show_ui' => true,
-				'query_var' => true,
 				'rewrite' => array( 'slug' => 'glossario/status' ),
 			),
 		);
@@ -202,10 +197,10 @@ class Glossario {
 	}
 }
 
-function better_front_page_ui_init() {
+function glossario_plugins_loaded() {
 	new Glossario();
 }
-add_action( 'plugins_loaded', 'better_front_page_ui_init' );
+add_action( 'plugins_loaded', 'glossario_plugins_loaded' );
 
 register_activation_hook( __FILE__, array( 'Glossario', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'Glossario', 'deactivate' ) );

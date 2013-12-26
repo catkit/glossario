@@ -80,11 +80,9 @@ seguintes campos:
   realizar a tradução de uma nova _string de tradução_ conforme as referências
   do glossário.
 
-#### Shortcodes
+## Shortcodes
 
-Shortcodes disponíveis para este plugin:
-
-##### `[glossario_term_table]`
+#### `[glossario_term_table]`
 
 Exibe uma tabela AJAX para consulta e navegação nos termos cadastrados. Não usa
 nenhum parâmetro.

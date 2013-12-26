@@ -357,8 +357,10 @@ class Glossario {
 				break;
 		}
 
-		if ( $found )
+		if ( $found ) {
 			wp_enqueue_script( 'jquery-data-tables',  plugins_url() . '/'. Glossario::$slug . '/js/jquery-data-tables.min.js', array( 'jquery' ) );
+			wp_enqueue_style( 'glossario', plugins_url() . '/' . Glossario::$slug . '/css/glossario.css' );
+		}
 
 		return $posts;
 	}

@@ -72,10 +72,19 @@ seguintes campos:
 #### Propostas de funcionalidades adicionais:
 
 * Shortcodes para exibição de uma lista com busca e significado dos termos --
-  com link para edição no admin para quem tiver acesso
+  com link para edição no admin para quem tiver acesso.
 * Cadastro de arquivos PO para mapeamento dos termos do glossários em traduções
   completas dos projetos da comunidade -- não envolve funcionalidade de edição
   de arquivos PO, somente exibição de onde o termo em questão aparece nas
   traduções. Isto pode ser útil ao se modificar um novo termo e para se
   realizar a tradução de uma nova _string de tradução_ conforme as referências
   do glossário.
+
+#### Shortcodes
+
+Shortcodes disponíveis para este plugin:
+
+##### `[glossario_term_table]`
+
+Exibe uma tabela AJAX para consulta e navegação nos termos cadastrados. Não usa
+nenhum parâmetro.

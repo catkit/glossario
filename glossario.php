@@ -25,15 +25,15 @@ class Glossario {
 	}
 
 	function activate() {
-		// @TODO: write plugin data if not exists
+		flush_rewrite_rules();
 	}
 
 	function deactivate() {
-		// @TODO: flush plugin data
+		flush_rewrite_rules();
 	}
 
 	function uninstall() {
-		// @TODO: remove plugin data
+		// @TODO: remove plugin options data
 	}
 
 	function init() {

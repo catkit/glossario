@@ -23,6 +23,7 @@ class Glossario {
 		add_action( 'init', array( $this, 'init' ) );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'the_posts', array( $this, 'the_posts' ) );
+		add_filter( 'the_content', array( $this, 'the_content' ) );
 		add_action( 'wp_ajax_glossario', array( $this, 'wp_ajax' ) );
 		add_action( 'wp_ajax_nopriv_glossario', array( $this, 'wp_ajax' ) );
 	}
@@ -348,6 +349,63 @@ class Glossario {
 			wp_enqueue_script( 'jquery-data-tables',  plugins_url() . '/'. Glossario::$slug . '/js/jquery-data-tables.min.js', array( 'jquery' ) );
 
 		return $posts;
+	}
+
+	/**
+	 * Custom content using the plugin fields for the Glossario::$post_term
+	 * type
+	 */
+	function the_content( $content ) {
+
+		global $post;
+
+		if ( Glossario::$post_term != $post->post_type )
+			return $content;
+
+		$fields = array(
+			'original_term_singular',
+			'original_term_plural',
+			'term_singular',
+			'term_plural',
+			'translation_notes',
+		);
+		foreach ( $fields as $f ) {
+			${$f} = get_post_meta( $post->ID, Glossario::$slug . '_' . $f, true );
+		}
+
+		ob_start();
+		?>
+		<h3><?php _e( 'Term translation', 'glossario' ); ?></h3>
+		<table class="term-single">
+
+			<?php if ( $original_term_singular && $term_singular ) : ?>
+				<tr class="singular">
+				<td class="title"><?php _e( 'Singular', 'glossario' ); ?></td>
+				<td><?php echo $original_term_singular; ?></td>
+				<td><?php echo $term_singular; ?></td>
+				</tr>
+			<?php endif; ?>
+
+			<?php if ( $original_term_plural && $term_plural ) : ?>
+				<tr class="plural">
+				<td class="title"><?php _e( 'Plural', 'glossario' ); ?></td>
+				<td><?php echo $original_term_plural; ?></td>
+				<td><?php echo $term_plural; ?></td>
+				</tr>
+			<?php endif; ?>
+
+		</table>
+
+		<?php if ( $translation_notes ) : ?>
+			<h3><?php _e( 'Translation notes', 'glossario' ); ?></h3>
+			<div class="translation-notes"><?php echo wpautop( $translation_notes ); ?></div>
+		<?php endif; ?>
+
+		<?php // @TODO: List occurences in the PO files ?>
+
+		<?php
+		return ob_get_clean();
+
 	}
 
 }

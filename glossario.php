@@ -213,17 +213,18 @@ class Glossario {
 			'iDisplayStart' => 0,
 			'sSearch' => false,
 			'orderby' => 'post_title'
-
 		);
 		$args = wp_parse_args( $args, $defaults );
 
-		$select_from = "
+		$select = "
 			SELECT
 				p.ID          AS 'term_id',
 				os.meta_value AS 'original_term_singular',
 				op.meta_value AS 'original_term_plural',
 				ts.meta_value AS 'term_singular',
-				tp.meta_value AS 'term_plural'
+				tp.meta_value AS 'term_plural' ";
+
+		$from = "
 			FROM
 				{$wpdb->posts} p ";
 
@@ -262,7 +263,7 @@ class Glossario {
 			$args['iDisplayStart'],
 			$args['iDisplayLength'] );
 
-		$sql = $select_from . $join . $where . $orderby_limit;
+		$sql = $select . $from . $join . $where . $orderby_limit;
 		$query = $wpdb->get_results( $sql );
 		return $query;
 	}

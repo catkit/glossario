@@ -211,7 +211,7 @@ class Glossario {
 		$defaults = array(
 			'iDisplayLength' => 50,
 			'iDisplayStart' => 0,
-			'iSearch' => false,
+			'sSearch' => false,
 			'orderby' => 'post_title'
 
 		);
@@ -246,14 +246,14 @@ class Glossario {
 				AND post_type = '" . Glossario::$post_term . "'
 				AND post_status = 'publish' ";
 
-		if ( !empty( $args['iSearch'] ) )
+		if ( !empty( $args['sSearch'] ) )
 			$where .= $wpdb->prepare( "AND (
-				original_term_singular LIKE '%%%s%'
-				OR original_term_plural LIKE '%%%s%'
-				OR term_singular LIKE '%%%s%'
-				OR term_plural LIKE '%%%s%' ) ",
-				$args['iSearch'], $args['iSearch'],
-				$args['iSearch'], $args['iSearch'] );
+				os.meta_value LIKE '%%%s%%'
+				OR op.meta_value LIKE '%%%s%%'
+				OR ts.meta_value LIKE '%%%s%%'
+				OR tp.meta_value LIKE '%%%s%%' ) ",
+				$args['sSearch'], $args['sSearch'],
+				$args['sSearch'], $args['sSearch'] );
 
 		$orderby_limit = $wpdb->prepare( "
 			ORDER BY %s

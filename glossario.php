@@ -209,10 +209,11 @@ class Glossario {
 		global $wpdb;
 
 		$defaults = array(
-			'iDisplayLength' => 50,
+			'iDisplayLength' => 100,
 			'iDisplayStart' => 0,
 			'sSearch' => false,
-			'orderby' => 'post_title'
+			'orderby' => 'post_title',
+			'count' => false,
 		);
 		$args = wp_parse_args( $args, $defaults );
 
@@ -263,9 +264,13 @@ class Glossario {
 			$args['iDisplayStart'],
 			$args['iDisplayLength'] );
 
+		if ( $args['count'] ) {
+			$sql = "SELECT COUNT(p.ID) " . $from . $join . $where;
+			return $wpdb->get_var( $sql );
+		}
+
 		$sql = $select . $from . $join . $where . $orderby_limit;
-		$query = $wpdb->get_results( $sql );
-		return $query;
+		return $wpdb->get_results( $sql );
 	}
 
 	function shortcode_term_table() {
@@ -280,6 +285,7 @@ class Glossario {
 				<th class="term-original-plural"><?php _e( 'Original plural', 'glossario' ); ?></th>
 				<th class="term-singular"><?php _e( 'Translated singular', 'glossario' ); ?></th>
 				<th class="term-plural"><?php _e( 'Translated plural', 'glossario' ); ?></th>
+				<th class="term-plural"><?php _e( 'Permalink', 'glossario' ); ?></th>
 			</tr>
 			</thead>
 
@@ -289,6 +295,7 @@ class Glossario {
 				jQuery('#<?php echo $id; ?>').dataTable({
 				    'bProcessing': true,
 					'bServerSide': true,
+					'iDisplayLength': 100,
 					'sPaginationType': 'full_numbers',
 					'sAjaxSource': '<?php echo admin_url('admin-ajax.php') . '?action=glossario&call=term_list'; ?>'
 				});
@@ -305,23 +312,27 @@ class Glossario {
 
 		if ( 'term_list' == $_GET['call'] ) {
 
+			$terms = $this->get_terms( $_GET );
+			$_GET['count'] = true;
+			$count = $this->get_terms( $_GET );
+
 			$response = array(
-				'iTotalRecords' => wp_count_posts( Glossario::$post_term )->publish,
-				'iTotalDisplayRecords' => wp_count_posts( Glossario::$post_term )->publish,
+				'iTotalRecords' => $count,
+				'iTotalDisplayRecords' => $count,
 			);
 
-			foreach ( $this->get_terms( $_GET ) as $term ) {
+			foreach ( $terms as $term ) {
 				$permalink = get_permalink( $term->term_id );
 				$link = '<a href="' . $permalink . '">%s</a>';
-				$terms[] = array(
-					sprintf( $link, $term->original_term_singular ),
-					sprintf( $link, $term->original_term_plural ),
-					sprintf( $link, $term->term_singular ),
-					sprintf( $link, $term->term_plural )
+				$response['aaData'][] = array(
+					$term->original_term_singular,
+					$term->original_term_plural,
+					$term->term_singular,
+					$term->term_plural,
+					sprintf( $link, __( 'Permalink', 'glossario' ) )
 				);
 			}
 
-			$response['aaData'] = $terms;
 			echo json_encode( $response );
 			exit();
 

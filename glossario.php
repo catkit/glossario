@@ -429,6 +429,7 @@ class Glossario {
 		}
 
 		$occurrences = get_post_meta( $post->ID, Glossario::$slug . '_po_files_entries', true );
+
 		$po_files = array();
 		foreach( $occurrences as $k => $v ) {
 			if ( ! $p = get_post( $k ) )
@@ -575,13 +576,7 @@ class Glossario {
 		foreach( $terms as $term ) {
 
 			$term = get_object_vars( $term );
-
-			$same_original_sp = $term['original_term_singular'] == $term['original_term_plural'];
-			$same_sp = $term['term_singular'] == $term['term_plural'];
-
-			$notrans_s = $term['original_term_singular'] == $term['term_singular'];
-			$notrans_p = $term['original_term_plural'] == $term['term_plural'];
-			$notrans = $notrans_s && $notrans_p;
+			$matches = array();
 
 			// Examine only the PO files of the same language
 			if ( ! $languages = wp_get_post_terms( $term['term_id'], Glossario::$tax_language ) )
@@ -613,28 +608,22 @@ class Glossario {
 					continue;
 
 				// Search for the original terms in all entries
-				$matches = array();
 				foreach ( $entries as $entry ) {
 
-					$replaced = array( array() );
 					$found = false;
+					$replaced = $entry;
+
 					foreach( $search_relation as $term_attr => $entry_attr ) {
 
 						// Term not set for this attribute
 						if ( empty( $term[ $term_attr ] ) )
 							continue;
 
-						// Singular and plural are the same ... or
-						// Term is not translated in its singular or plural form ... then
-						// Don't repeat the same strings for plural
-						if ( ( 'original_term_plural' == $term_attr && ( $same_original_sp || $notrans ) )
-							|| ( 'term_plural' == $term_attr && ( $same_sp || $notrans ) ) )
-							continue;
-
 						// Replace patterns in each entry
 						$pattern = '/\b(' . $term[ $term_attr ] . ')\b/i';
-						foreach( $entry[ $entry_attr ] as $subject ) {
-							$replaced[ $entry_attr ][] = preg_replace( $pattern, $replace, $subject, -1, $count );
+						for ( $i = 0; $i < count( $replaced[ $entry_attr ] ); $i++ ) {
+							$subject = $replaced[ $entry_attr ][ $i ];
+							$replaced[ $entry_attr ][ $i ] = preg_replace( $pattern, $replace, $subject, -1, $count );
 							if ( $count ) {
 								$found = true;
 								$replace_count++;
@@ -643,16 +632,11 @@ class Glossario {
 
 					}
 
+					// Store replacements if any was made
 					if ( $found ) {
-
-						// Replace strings in the matched formats on the original entry
-						$entry = array_merge( $entry, $replaced );
-
-						// Store it
-						if ( empty( $matches[ $po_file->ID ] ) )
-							$matches[ $po_file->ID ] = array();
-						$matches[ $po_file->ID ][] = $entry;
+						$matches[ $po_file->ID ][] = $replaced;
 					}
+
 				}
 			}
 

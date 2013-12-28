@@ -4,6 +4,16 @@ Um plugin em WordPress que sirva como um glossário para traduções de termos e
 para a discussão colaborativa desses verbetes. [Siga a discussão
 inicial](http://participe.wp-brasil.org/2013/12/13/pessoal-voces-que-estao-nessa-vibe-de-fazer/).
 
+## Nome do plugin
+
+O nome "Glossário" e o slug `glossario` são mantidos em sua variação do
+português para reforçar o aspecto
+[lusófono](http://pt.wikipedia.org/wiki/Lusofonia) desta ferramenta -- criada
+em um primeiro momento para a realização das traduções do WordPress pelas
+comunidades brasileira e portuguesa. Nomenclaturas como `glossario_term` e
+`glossario_po_file` no código não são aqui vistas como uma inconsistência de
+projeto.
+
 ## Terminologia
 
 Tanto o WordPress quanto os glossários baseiam-se na palavra _termo_ (_term_ no

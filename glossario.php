@@ -9,15 +9,16 @@
  */
 
 include( dirname( __FILE__ ) . '/glossario-metabox.php' );
+include( dirname( __FILE__ ) . '/inc/poparser.php' );
 
 class Glossario {
 
-	public static $slug           = 'glossario';
-	public static $post_term      = 'glossario_term';
-	public static $post_po_file   = 'glossario_po_file';
-	public static $tax_language   = 'glossario_term_language';
-	public static $tax_class      = 'glossario_term_class';
-	public static $tax_status     = 'glossario_term_status';
+	public static $slug         = 'glossario';
+	public static $post_term    = 'glossario_term';
+	public static $post_po_file = 'glossario_po_file';
+	public static $tax_language = 'glossario_term_language';
+	public static $tax_class    = 'glossario_term_class';
+	public static $tax_status   = 'glossario_term_status';
 
 	function Glossario() {
 		add_action( 'init', array( $this, 'init' ) );

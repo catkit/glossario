@@ -94,13 +94,45 @@ class Glossario_Metabox {
 		// Write changes
 		foreach ( $this->_meta_box['fields'] as $field ) {
 			$old = get_post_meta( $post_id, $field['id'], true );
-			$new = $_POST[ $field['id'] ];
+			$new = !empty( $_POST[ $field['id'] ] ) ? $_POST[ $field['id'] ] : '';
 
 			if ( $new && $new != $old )
 				update_post_meta( $post_id, $field['id'], $new );
 			elseif ('' == $new && $old)
 				delete_post_meta( $post_id, $field['id'], $old );
-
 		}
-    }
+
+		// Update the term occurences in PO files if a term is being saved
+		$is_term = Glossario::$post_term == $_POST['post_type'];
+		if ( $is_term && $n = Glossario::update_term_occurrences( $post_id ) ) {
+			$message = array(
+				'class' => 'updated',
+				'message' => sprintf( __( 'This term was found %d times in the registerd PO files.', 'glossario' ), $n )
+			);
+			set_transient( Glossario::$slug . '_admin_notices', $message, 120 );
+		} elseif ( $is_term ) {
+			$message = array(
+				'class' => 'updated',
+				'message' => __( "This term wasn't found in the registered PO files.", 'glossario' )
+			);
+			set_transient( Glossario::$slug . '_admin_notices', $message, 120 );
+		}
+
+		// Parse if this is a PO file post type being saved
+		$is_po_file = Glossario::$post_po_file == $_POST['post_type'];
+		if ( $is_po_file && $n = Glossario::parse_po_file( $post_id ) ) {
+			$message = array (
+				'class' => 'updated',
+				'message' => sprintf ( __( 'The file was correctly parsed with %d strings found.', 'glossario' ), $n )
+			);
+			set_transient( Glossario::$slug . '_admin_notices', $message, 120 );
+		} elseif ( $is_po_file ) {
+			$message = array (
+				'class' => 'error',
+				'message' => __( "There was an error parsing the PO file you provided. That may not be a valid PO file or the URL could not be fetched.", 'glossario' )
+			);
+			set_transient( Glossario::$slug . '_admin_notices', $message, 120 );
+		}
+
+	}
 }

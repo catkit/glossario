@@ -27,6 +27,7 @@ class Glossario {
 		add_filter( 'the_content', array( $this, 'the_content' ) );
 		add_action( 'wp_ajax_glossario', array( $this, 'wp_ajax' ) );
 		add_action( 'wp_ajax_nopriv_glossario', array( $this, 'wp_ajax' ) );
+		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
 	}
 
 	function activate() {
@@ -54,7 +55,7 @@ class Glossario {
 	 * Add Glossary term info meta box
 	 */
 	function add_meta_boxes() {
-		$meta_box = array(
+		$term_meta_box = array(
 			'id' => Glossario::$slug . '_term_info',
 			'title' => __( 'Glossary term info', 'glossario' ),
 			'post_types' => array( Glossario::$post_term ),
@@ -94,7 +95,25 @@ class Glossario {
 				),
 			),
 		);
-		new Glossario_Metabox( $meta_box );
+		new Glossario_Metabox( $term_meta_box );
+
+		$po_file_meta_box = array(
+			'id' => Glossario::$slug . '_po_file_info',
+			'title' => __( 'PO file info', 'glossario' ),
+			'post_types' => array( Glossario::$post_po_file ),
+			'context' => 'normal',
+			'priority' => 'high',
+			'fields' => array(
+				array(
+					'type' => 'text',
+					'id' => Glossario::$slug . '_po_file_url',
+					'name' => __( 'PO file URL', 'glossario' ),
+					'desc' => __( 'The URL where this PO file can be fetched.', 'glossario' ),
+					'std' => ''
+				),
+			),
+		);
+		new Glossario_Metabox( $po_file_meta_box );
 	}
 
 	function register_custom_post_types() {
@@ -394,6 +413,16 @@ class Glossario {
 			${$f} = get_post_meta( $post->ID, Glossario::$slug . '_' . $f, true );
 		}
 
+		$occurrences = get_post_meta( $post->ID, Glossario::$slug . '_po_files_entries', true );
+		$po_files = array();
+		foreach( $occurrences as $k => $v ) {
+			if ( ! $p = get_post( $k ) )
+				continue;
+			$po_files[ $k ] = $p;
+		}
+
+		$po_line_keys = array( 'tcomment', 'ccomment' );
+
 		ob_start();
 		?>
 		<h3><?php _e( 'Term translation', 'glossario' ); ?></h3>
@@ -422,10 +451,213 @@ class Glossario {
 			<div class="translation-notes"><?php echo wpautop( $translation_notes ); ?></div>
 		<?php endif; ?>
 
-		<?php // @TODO: List occurences in the PO files ?>
+		<?php if ( !empty( $po_files ) ) : ?>
+
+			<h3><?php _e( 'Project occurrences', 'glossario' ); ?></h3>
+
+			<?php foreach ( $po_files as $po_file ) : ?>
+
+				<div class="<?php echo Glossario::$slug; ?>-project-ccurrence">
+
+				<h4><a href="<?php echo get_post_meta( $po_file->ID, Glossario::$slug . '_po_file_url', true ); ?>"><?php echo $po_file->post_title; ?></a></h4>
+
+				<?php foreach( $occurrences[ $po_file->ID ] as $occurrence ) : ?>
+
+					<table class="<?php echo Glossario::$slug; ?>-msgid-msgstr">
+					<?php for ($i = 0; $i < count( $occurrence['msgid'] ); $i++ ) : ?>
+						<tr>
+						<td width="50%"><?php echo $occurrence['msgid'][ $i ]; ?></td>
+						<td width="50%"><?php echo $occurrence['msgstr'][ $i ]; ?></td>
+						</tr>
+					<?php endfor; ?>
+					</table>
+
+					<?php if ( ! empty( $occurrence['fuzzy'] ) || !empty( $occurrence['obsolete'] ) ) : ?>
+						<p class="<?php echo Glossario::$slug; ?>-status">
+							<?php if ( ! empty( $occurrence['fuzzy'] ) ) : ?><strong class="fuzzy"><?php _e( 'Fuzzy', 'glossario' ); ?></strong><?php endif; ?>
+							<?php if ( ! empty( $occurrence['obsolete'] ) ) : ?><strong class="obsolete"><?php _e( 'Obsolete', 'glossario' ); ?></strong><?php endif; ?>
+						</p>
+					<?php endif; ?>
+
+					<?php if ( ! empty( $occurrence['msgctxt'] ) ) : ?>
+						<p class="<?php echo Glossario::$slug; ?>-msgctxt"><?php _e( 'Disambiguation context', 'glossario' ); ?>: <?php echo implode( ', ', $occurrence['msgctxt'] ); ?></p>
+					<?php endif; ?>
+
+					<?php foreach( $po_line_keys as $key ) : ?>
+						<?php if ( ! empty( $occurrence[$key] ) ) : ?>
+							<?php foreach ( $occurrence[$key] as $value ) : ?>
+								<p class="<?php echo Glossario::$slug . '-' . $key; ?>"><?php echo $value; ?></p>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					<?php endforeach; ?>
+
+					<?php if ( ! empty( $occurrence['reference'] ) ) : ?>
+						<pre><?php echo implode( "\n", $occurrence['reference'] ); ?></pre>
+					<?php endif; ?>
+
+				<?php endforeach; ?>
+
+			<?php endforeach; ?>
+
+			</div>
+
+		<?php endif; ?>
+
 
 		<?php
 		return ob_get_clean();
+	}
+
+	function parse_po_file( $post_id ) {
+
+		$po_file = get_post_meta( $post_id, Glossario::$slug . '_po_file_url', true );
+		if ( ! $f = wp_remote_get( $po_file ) )
+			return false;
+
+		if ( empty( $f['response']['code'] ) || $f['response']['code'] != 200 )
+			return false;
+
+		$po_tmp_file = tempnam( sys_get_temp_dir(), Glossario::$slug . '-po-file' );
+		if ( ! @file_put_contents( $po_tmp_file, $f['body'], FILE_TEXT ) )
+			return false;
+
+		$po_parser = new Sepia\PoParser();
+		if ( ! $po_entries = $po_parser->read( $po_tmp_file ) )
+			return false;
+
+		update_post_meta( $post_id, Glossario::$slug . '_po_file_entries', $po_entries );
+		return count( $po_entries );
+
+	}
+
+	/**
+	 * Look for term occurrences in the PO files and save results to database.
+	 *
+	 * @param term_id      Search occurrences for only this term_id. Will
+	 *                     search in all terms if not provided
+	 *
+	 * @return int         Number of occurrences found
+	 */
+	function update_term_occurrences( $term_id = false ) {
+
+		$args = array( 'iDisplayLength' => -1 );
+		if ( $term_id )
+			$args['term_id'] = $term_id;
+
+		if ( ! $terms = Glossario::get_terms( $args ) )
+			return false;
+
+		$search_relation = array(
+			'original_term_singular' => 'msgid',
+			'original_term_plural' => 'msgid',
+			'term_singular' => 'msgstr',
+			'term_plural' => 'msgstr',
+		);
+
+		$replace = '<strong class="glossario-match">\1</strong>';
+		$replace_count = 0;
+
+		foreach( $terms as $term ) {
+
+			$term = get_object_vars( $term );
+
+			$same_original_sp = $term['original_term_singular'] == $term['original_term_plural'];
+			$same_sp = $term['term_singular'] == $term['term_plural'];
+
+			$notrans_s = $term['original_term_singular'] == $term['term_singular'];
+			$notrans_p = $term['original_term_plural'] == $term['term_plural'];
+			$notrans = $notrans_s && $notrans_p;
+
+			// Examine only the PO files of the same language
+			if ( ! $languages = wp_get_post_terms( $term['term_id'], Glossario::$tax_language ) )
+				continue;
+
+			$languages_ids = array();
+			foreach ( $languages as $language ) {
+				$languages_ids[] = $language->term_id;
+			}
+
+			$po_files = new WP_Query( array(
+				'post_type' => Glossario::$post_po_file,
+				'nopaging' => true,
+				'tax_query' => array(
+					array(
+						'taxonomy' => Glossario::$tax_language,
+						'field' => 'id',
+						'terms' => $languages_ids,
+						'operator' => 'IN'
+					),
+				),
+			) );
+
+			foreach( $po_files->posts as $po_file ) {
+
+				// No messages in this PO file
+				$entries = get_post_meta( $po_file->ID, Glossario::$slug . '_po_file_entries', true );
+				if ( empty( $entries ) || ! is_array( $entries ) )
+					continue;
+
+				// Search for the original terms in all entries
+				$matches = array();
+				foreach ( $entries as $entry ) {
+
+					$replaced = array( array() );
+					$found = false;
+					foreach( $search_relation as $term_attr => $entry_attr ) {
+
+						// Term not set for this attribute
+						if ( empty( $term[ $term_attr ] ) )
+							continue;
+
+						// Singular and plural are the same ... or
+						// Term is not translated in its singular or plural form ... then
+						// Don't repeat the same strings for plural
+						if ( ( 'original_term_plural' == $term_attr && ( $same_original_sp || $notrans ) )
+							|| ( 'term_plural' == $term_attr && ( $same_sp || $notrans ) ) )
+							continue;
+
+						// Replace patterns in each entry
+						$pattern = '/\b(' . $term[ $term_attr ] . ')\b/i';
+						foreach( $entry[ $entry_attr ] as $subject ) {
+							$replaced[ $entry_attr ][] = preg_replace( $pattern, $replace, $subject, -1, $count );
+							if ( $count ) {
+								$found = true;
+								$replace_count++;
+							}
+						}
+
+					}
+
+					if ( $found ) {
+
+						// Replace strings in the matched formats on the original entry
+						$entry = array_merge( $entry, $replaced );
+
+						// Store it
+						if ( empty( $matches[ $po_file->ID ] ) )
+							$matches[ $po_file->ID ] = array();
+						$matches[ $po_file->ID ][] = $entry;
+					}
+				}
+			}
+
+			update_post_meta( $term['term_id'], Glossario::$slug . '_po_files_entries', $matches );
+
+		}
+
+		return $replace_count;
+
+	}
+
+	function admin_notices() {
+		if ( ! $notice = get_transient( Glossario::$slug . '_admin_notices' ) )
+			return false;
+		delete_transient( Glossario::$slug . '_admin_notices' );
+		?>
+		<div class="<?php echo $notice['class']; ?>">
+			<p><?php echo $notice['message']; ?></p>
+		</div>
+		<?php
 
 	}
 

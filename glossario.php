@@ -529,7 +529,7 @@ class Glossario {
 		if ( ! $f = wp_remote_get( $po_file ) )
 			return false;
 
-		if ( empty( $f['response']['code'] ) || $f['response']['code'] != 200 )
+		if ( is_wp_error( $f ) || $f['response']['code'] != 200 )
 			return false;
 
 		$po_tmp_file = tempnam( sys_get_temp_dir(), Glossario::$slug . '-po-file' );

@@ -128,6 +128,7 @@ class Glossario_Metabox {
 				'message' => sprintf ( __( 'The file was correctly parsed with %d strings found.', 'glossario' ), $n )
 			);
 			set_transient( Glossario::$slug . '_admin_notices', $message, 120 );
+			Glossario::update_term_occurrences();
 		} elseif ( $is_po_file ) {
 			$message = array (
 				'class' => 'error',

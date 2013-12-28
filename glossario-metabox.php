@@ -66,8 +66,10 @@ class Glossario_Metabox {
 
 	function wp_insert_post_data( $data , $postarr ) {
 		$key = Glossario::$slug . '_original_term_singular';
-		if ( !empty( $postarr[ $key ] ) )
+		if ( !empty( $postarr[ $key ] ) ) {
 			$data['post_title'] = $postarr[ $key ];
+			$data['post_name'] = sanitize_title( $data['post_title'] );
+		}
 		return $data;
 	}
 

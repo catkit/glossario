@@ -294,7 +294,7 @@ class Glossario {
 		<script type="text/javascript">
 			jQuery(document).ready(function(){
 				jQuery('#<?php echo $id; ?>').dataTable({
-				    'bProcessing': true,
+					'bProcessing': true,
 					'bServerSide': true,
 					'iDisplayLength': 100,
 					'sPaginationType': 'full_numbers',

@@ -215,6 +215,7 @@ class Glossario {
 			'sSearch' => false,
 			'orderby' => 'post_title',
 			'count' => false,
+			'term_id' => false,
 		);
 		$args = wp_parse_args( $args, $defaults );
 
@@ -250,7 +251,7 @@ class Glossario {
 				AND post_status = 'publish' ";
 
 		if ( !empty( $args['sSearch'] ) )
-			$where .= $wpdb->prepare( "AND (
+			$where .= $wpdb->prepare( " AND (
 				os.meta_value LIKE '%%%s%%'
 				OR op.meta_value LIKE '%%%s%%'
 				OR ts.meta_value LIKE '%%%s%%'
@@ -258,19 +259,24 @@ class Glossario {
 				$args['sSearch'], $args['sSearch'],
 				$args['sSearch'], $args['sSearch'] );
 
-		$orderby_limit = $wpdb->prepare( "
-			ORDER BY %s
-			LIMIT %d, %d ",
-			$args['orderby'],
-			$args['iDisplayStart'],
-			$args['iDisplayLength'] );
+		if ( !empty( $args['term_id'] ) )
+			$where .= $wpdb->prepare( " AND p.ID = '%d' ", $args['term_id'] );
+
+		$orderby = $wpdb->prepare( " ORDER BY %s ", $args['orderby'] );
+
+		if ( $args['iDisplayLength'] == -1 )
+			$limit = '';
+		else
+			$limit = $wpdb->prepare( " LIMIT %d, %d ",
+				$args['iDisplayStart'],
+				$args['iDisplayLength'] );
 
 		if ( $args['count'] ) {
 			$sql = "SELECT COUNT(p.ID) " . $from . $join . $where;
 			return $wpdb->get_var( $sql );
 		}
 
-		$sql = $select . $from . $join . $where . $orderby_limit;
+		$sql = $select . $from . $join . $where . $orderby . $limit;
 		return $wpdb->get_results( $sql );
 	}
 

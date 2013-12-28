@@ -648,6 +648,15 @@ class Glossario {
 
 	}
 
+	/**
+	 * Check if there is any 'PO file' registered under the 'PO File' post type
+	 * 
+	 * @return bool Whether PO files exist
+	 */
+	function po_files_exist() {
+		return (bool) get_posts( array( 'post_type' => Glossario::$post_po_file ) );
+	}
+
 	function admin_notices() {
 		if ( ! $notice = get_transient( Glossario::$slug . '_admin_notices' ) )
 			return false;

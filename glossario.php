@@ -224,6 +224,21 @@ class Glossario {
 		}
 	}
 
+	/**
+	 * Get glossary terms based of SQL joins for each post_meta
+	 *
+	 * Refer to $defaults variable for default values
+	 *
+	 * @param iDisplayLength query limit
+	 * @param iDisplayStart  query offset
+	 * @param sSearch        term search string across all values
+	 * @param orderby        query order by field
+	 * @param count          return number of found terms instead of objects
+	 * @param term_id        get specific term
+	 *
+	 * @return int           number of posts found if 'count' is set
+	 * @return array         objects found if 'count' is not set
+	 */
 	function get_terms( $args = false ) {
 
 		global $wpdb;

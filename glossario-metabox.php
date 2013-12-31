@@ -17,7 +17,7 @@ class Glossario_Metabox {
 				$post_type, $this->_meta_box['context'], $this->_meta_box['priority'] );
 		}
 
-		add_filter( 'wp_insert_post_data' , array( $this, 'wp_insert_post_data' ) , '99', 2 );
+		add_filter( 'wp_insert_post_data' , array( $this, 'wp_insert_post_data' ) , 99, 2 );
 		add_action( 'save_post', array( $this, 'save_post' ) );
     }
 
@@ -65,11 +65,16 @@ class Glossario_Metabox {
 	}
 
 	function wp_insert_post_data( $data , $postarr ) {
-		$key = Glossario::$slug . '_original_term_singular';
-		if ( !empty( $postarr[ $key ] ) ) {
-			$data['post_title'] = $postarr[ $key ];
-			$data['post_name'] = sanitize_title( $data['post_title'] );
-		}
+
+		if ( Glossario::$post_term != $postarr['post_type'] )
+			return $data;
+
+		$term_key = Glossario::$slug . '_original_term_singular';
+		if ( empty( $postarr[ $term_key ] ) )
+			return $data;
+
+		$data['post_title'] = $postarr[ $term_key ];
+		$data['post_name'] = sanitize_title( $data['post_title'] );
 		return $data;
 	}
 

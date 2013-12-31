@@ -117,6 +117,12 @@ class Glossario_Metabox {
 				'message' => sprintf( __( 'This term was found %d times in the registerd PO files.', 'glossario' ), $n )
 			);
 			set_transient( Glossario::$slug . '_admin_notices', $message, 120 );
+		} elseif ( $is_term && ! Glossario::po_files_exist() ) {
+			$message = array(
+				'class' => 'updated',
+				'message' => sprintf( __( 'There isn\'t any PO file registered. <a href="%s">How about add one?</a>', 'glossario' ), admin_url( 'post-new.php?post_type=' . Glossario::$post_term ) )
+			);
+			set_transient( Glossario::$slug . '_admin_notices', $message, 120 );
 		} elseif ( $is_term ) {
 			$message = array(
 				'class' => 'updated',
@@ -137,7 +143,7 @@ class Glossario_Metabox {
 		} elseif ( $is_po_file ) {
 			$message = array (
 				'class' => 'error',
-				'message' => __( "There was an error parsing the PO file you provided. That may not be a valid PO file or the URL could not be fetched.", 'glossario' )
+				'message' => __( 'There was an error parsing the PO file you provided. That may not be a valid PO file or the URL could not be fetched.', 'glossario' )
 			);
 			set_transient( Glossario::$slug . '_admin_notices', $message, 120 );
 		}

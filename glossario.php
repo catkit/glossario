@@ -537,7 +537,7 @@ class Glossario {
 		if ( ! @file_put_contents( $po_tmp_file, $f['body'], FILE_TEXT ) )
 			return false;
 
-		$po_parser = new Sepia\PoParser();
+		$po_parser = new PoParser();
 		if ( ! $po_entries = $po_parser->read( $po_tmp_file ) )
 			return false;
 

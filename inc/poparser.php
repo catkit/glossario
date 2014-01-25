@@ -1,11 +1,9 @@
-<?php 
-
-namespace Sepia;
+<?php
 
 /**
 *	Copyright (c) 2012 Raúl Ferràs raul.ferras@gmail.com
 *	All rights reserved.
-*	
+*
 *	Redistribution and use in source and binary forms, with or without
 *	modification, are permitted provided that the following conditions
 *	are met:
@@ -17,7 +15,7 @@ namespace Sepia;
 *	3. Neither the name of copyright holders nor the names of its
 *	   contributors may be used to endorse or promote products derived
 *	   from this software without specific prior written permission.
-*	
+*
 *	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 *	''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
 *	TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -162,7 +160,7 @@ class PoParser
 					{
 						$str = implode( ' ', array_slice($tmpParts,1) );
 					}
-	
+
 					switch( $tmpKey )
 					{
 						case 'msgid':
@@ -273,7 +271,7 @@ class PoParser
 			$this->headers[] = "\"" . preg_replace( "/\\n/", "\\n", $this->clean( $header ) ) . "\"";
 		}
 
-		// - Cleanup data, 
+		// - Cleanup data,
 		// - merge multiline entries
 		// - Reindex hash for ksort
 		$temp = $hash;
@@ -338,7 +336,7 @@ class PoParser
 	*	@example
 	*		$pofile = new PoParser();
 	*		$pofile->read('ca.po');
-	*		
+	*
 	*		// Modify an antry
 	*		$pofile->update_entry( $msgid, $msgstr );
 	*		// Save Changes back into `ca.po`
@@ -396,7 +394,7 @@ class PoParser
 				{
 					fwrite( $handle, "#, ".$entry['flags']."\n" );
 				}
-				
+
 				if( isset($entry['@']) )
 				{
 					fwrite( $handle, "#@ ".$entry['@']."\n" );
@@ -423,7 +421,7 @@ class PoParser
 					{
 						$msgid = $entry['msgid'];
 					}
-					
+
 					fwrite( $handle, 'msgid ');
 					foreach( $msgid AS $i=>$id )
 					{
@@ -434,7 +432,7 @@ class PoParser
 						fwrite( $handle, $this->clean_export($id). "\n");
 					}
 				}
-				
+
 				if( isset($entry['msgid_plural']) )
 				{
 					// Special clean for msgid_plural
@@ -509,7 +507,7 @@ class PoParser
 
 	/**
 	*	Prepares a string to be outputed into a file.
-	*	
+	*
 	*	@param $string. The string to be converted.
 	*/
 	protected function clean_export( $string )
@@ -584,7 +582,7 @@ class PoParser
 
 
 	/**
-	*	Checks if entry is a header by 
+	*	Checks if entry is a header by
 	*/
 	static protected function is_header( $entry )
 	{

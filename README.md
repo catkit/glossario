@@ -1,5 +1,7 @@
 # Glossário
 
+[![Join the chat at https://gitter.im/catkit/glossario](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/catkit/glossario?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Um plugin em WordPress que sirva como um glossário para traduções de termos e
 para a discussão colaborativa desses verbetes. [Siga a discussão
 inicial](http://participe.wp-brasil.org/2013/12/13/pessoal-voces-que-estao-nessa-vibe-de-fazer/).
